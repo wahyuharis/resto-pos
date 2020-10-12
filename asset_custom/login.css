@@ -1,0 +1,60 @@
+.center-container{
+    position: absolute;
+    top:0px;
+    left: 0px;
+    background-color: transparent;
+    width: 100%;
+    min-height: 500px;
+}
+
+.slider {
+    max-width: 100%;
+    height: 100%;
+    /*margin: 20px auto;*/
+    position: relative;
+}
+.slide1,.slide2,.slide3,.slide4,.slide5 {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+.slide1 {
+    background: url(../carousel/login1.jpg)no-repeat center;
+    background-size: cover;
+    animation:fade 10s infinite;
+    -webkit-animation:fade 10s infinite;
+
+} 
+.slide2 {
+    background: url(../carousel/login2.jpg)no-repeat center;
+    background-size: cover;
+    animation:fade2 10s infinite;
+    -webkit-animation:fade2 10s infinite;
+}
+.slide3 {
+    background: url(../carousel/login3.jpg)no-repeat center;
+    background-size: cover;
+    animation:fade3 10s infinite;
+    -webkit-animation:fade3 10s infinite;
+}
+@keyframes fade
+{
+    0%   {opacity:1}
+    33.333% { opacity: 0}
+    66.666% { opacity: 0}
+    100% { opacity: 1}
+}
+@keyframes fade2
+{
+    0%   {opacity:0}
+    33.333% { opacity: 1}
+    66.666% { opacity: 0 }
+    100% { opacity: 0}
+}
+@keyframes fade3
+{
+    0%   {opacity:0}
+    33.333% { opacity: 0}
+    66.666% { opacity: 1}
+    100% { opacity: 0}
+}
