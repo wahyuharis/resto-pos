@@ -37,7 +37,7 @@ class Kategori extends CI_Controller {
             'aksi',
             'id_kategori',
             'nama kategori',
-            'foto'
+//            'foto'
         );
 
         return $table_header;
@@ -48,7 +48,7 @@ class Kategori extends CI_Controller {
             'aksi',
             'id_kategori',
             'nama_kategori',
-            'foto'
+//            'foto'
         );
 
         return $array;
@@ -58,8 +58,8 @@ class Kategori extends CI_Controller {
         $sql = "SELECT  
             '' as aksi,
             id_kategori,
-            nama_kategori,
-            foto
+            nama_kategori
+            
             FROM it_kategori
             WHERE it_kategori.`status`=1
             AND

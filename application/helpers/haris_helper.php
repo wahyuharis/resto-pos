@@ -132,6 +132,10 @@ function header_text() {
     header("Content-Type: text/plain");
 }
 
+function header_cross_domain(){
+    header("Access-Control-Allow-Origin: *");
+}
+
 function multidim_search($column, $value, $array) {
     foreach ($array as $key => $val) {
         if ($val[$column] == $value) {

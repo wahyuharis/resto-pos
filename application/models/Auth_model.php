@@ -48,6 +48,11 @@ class Auth_model extends CI_Model {
 
         $this->db->or_where('username', $username);
         $this->db->or_where('email', $username);
+
+        $this->db->group_start();
+        $this->db->where('type', 'admin');
+        $this->db->group_end();
+
         $db = $this->db->get($this->db_table);
 
         if ($db->num_rows() > 0) {
@@ -76,8 +81,6 @@ class Auth_model extends CI_Model {
         $this->url_controller = $this->router->directory . "" . $this->router->class;
         $this->url_controller = rtrim(strtolower($this->url_controller), "/") . "/";
     }
-    
-    
 
     public function get_url_controller() {
         return $this->url_controller;
@@ -91,6 +94,7 @@ class Auth_model extends CI_Model {
         $this->db->or_where('_user.email', $this->username);
         $this->db->group_end();
 
+        $this->db->where('type', 'admin');
         $this->db->where('password', $this->password);
         $db = $this->db->get($this->db_table);
 
@@ -120,7 +124,8 @@ class Auth_model extends CI_Model {
         $this->db->or_where('username', $this->username);
         $this->db->or_where('email', $this->username);
         $this->db->group_end();
-
+        
+        $this->db->where('type', 'admin');
         $this->db->where('password', $this->password);
 
         $db = $this->db->get($this->db_table);

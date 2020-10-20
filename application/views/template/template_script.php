@@ -18,7 +18,7 @@
 
 
         $('.select2-noajax').select2();
-        
+
         $('.range-date').daterangepicker({
 //            autoUpdateInput: false,
             singleDatePicker: false,
@@ -82,24 +82,26 @@
             });
 
 
+            $('.number').keypress(function (event) {
+                num = $(this).val();
+                if ((event.which != 46 || $(this).val().indexOf('.') != -1) && (event.which < 48 || event.which > 57)) {
+                    event.preventDefault();
+                }
+            });
+
+            $('.number').focusout(function () {
+                num = $(this).val();
+                num = numeral(num).format('0,0.00');
+                $(this).val(num);
+            });
+
             $('.number').each(function () {
                 num = $(this).val();
-                 num = parseFloat(num);
-                $(this).val(num);
-            });
-
-            $('.number').keyup(function () {
-                num = $(this).val();
-                num = parseFloat(num);
+                num = numeral(num).format();
                 $(this).val(num);
             });
 
 
-            $('.number').each(function () {
-                num = $(this).val();
-                num = parseFloat(num);
-                $(this).val(num);
-            });
         }
 
 
@@ -143,11 +145,17 @@
                 ],
             },
         });
-        
-        
+
+
         $('#content-isi').animate({
             opacity: 1,
-        },1000);
+        }, 1000);
+
+//        content-header
+
+        $('#content-header').animate({
+            opacity: 1,
+        }, 1000);
 
 
 

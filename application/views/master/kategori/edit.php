@@ -26,7 +26,7 @@ $auth = new Auth_model();
                 </div>
 
 
-                <div class="form-group">
+                <div class="form-group hidden">
                     <label for="foto">foto</label>
                     <br>
                     <?php $url_foto = 'default_img/blank-image.png' ?>

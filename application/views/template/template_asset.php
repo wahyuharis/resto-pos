@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="<?= $lte_url ?>plugins/jquery-ui/jquery-ui.min.css">
 <link rel="stylesheet" href="<?= $lte_url ?>bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
 <link href="<?= base_url() ?>node_modules/toastr/build/toastr.min.css" rel="stylesheet" type="text/css"/>
-<link href="<?= base_url() ?>asset_custom/custom.css" rel="stylesheet" type="text/css"/>
+<link href="<?= base_url() ?>asset_custom/custom.css?uniq_id=<?= uniqid()?>" rel="stylesheet" type="text/css"/>
 <?php if (isset($css_files)) { ?>
     <?php foreach ($css_files as $css) { ?>
         <link href="<?= $css ?>" rel="stylesheet">
@@ -39,6 +39,8 @@
 <!--<script src="<?= $lte_url ?>bower_components/fastclick/lib/fastclick.js"></script>-->
 <script src="<?= $lte_url ?>bower_components/PACE/pace.min.js"></script>
 <script src="<?= base_url() ?>node_modules/toastr/build/toastr.min.js" type="text/javascript"></script>
+<!--<script src="<?= base_url() ?>node_modules/jspdf/dist/jspdf.umd.min.js" type="text/javascript"></script>-->
+<!--<script src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>-->
 <script src="<?= base_url() ?>asset_custom/knockout-3.5.1.js" type="text/javascript"></script>
 <script src="<?= base_url() ?>asset_custom/JQGrid.js" type="text/javascript"></script>
 <script src="<?= base_url() ?>asset_custom/custom.js" type="text/javascript"></script>

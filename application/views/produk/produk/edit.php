@@ -157,7 +157,7 @@ $auth = new Auth_model();
                                     <td data-bind="visible: $root.primary_id() < 1"><input  data-bind="value: qty_adj" type="text"  class="form-control" ></span></td>
                                     -->
                                     <td><span data-bind="text: qty_awal"></span></td>
-                                    <td><input  data-bind="value: qty_adj" type="text"  class="form-control thousand" ></span></td>
+                                    <td><input  data-bind="value: qty_adj" type="text"  class="form-control number" ></span></td>
 
                                 </tr>
                             </tbody>

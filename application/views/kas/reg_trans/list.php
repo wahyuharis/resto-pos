@@ -11,7 +11,6 @@ $auth = new Auth_model();
                 <!--<div class="col-md-12" style="height: 20px"></div>-->
                 <form id="form-filter">
                     <div class="col-md-3" >
-
                         <div class="form-group">
                             <label for="">Outlet</label>
                             <?= form_dropdown('outlet', $opt_outlet, '', ' class="form-control" ') ?>
@@ -32,7 +31,7 @@ $auth = new Auth_model();
                     <div class="col-md-3" >
                         <div class="form-group">
                             <label for="">tanggal</label>
-                            <input type="text" name="tanggal" value="" class="form-control" placeholder="tanggal">
+                            <input type="text" name="tanggal" value="<?= $tanggal_val ?>" class="form-control range-date" placeholder="tanggal">
                         </div>
                     </div>
 
@@ -57,7 +56,12 @@ $auth = new Auth_model();
     <div class="box-body">
         <div class="row">
             <div class="col-md-6">
-                <a class="btn btn-primary" href="<?= base_url() . $auth->get_url_controller() . 'add' ?>"><i class="fa fa-plus"></i> Tambah</a>
+                <a class="btn btn-primary" href="<?= base_url() . $auth->get_url_controller() . 'pemasukan' ?>">
+                    <i class="fa fa-usd"></i> 
+                    Pemasukan</a>
+                <a class="btn btn-primary" href="<?= base_url() . $auth->get_url_controller() . 'pengeluaran' ?>"> 
+                    <i class="fa fa-cart-plus"></i> 
+                    Pengeluaran</a>
             </div>
 
             <div class="col-md-6">
@@ -147,7 +151,7 @@ $auth = new Auth_model();
             },
             "scrollX": true,
             "pagingType": "full",
-            "order": [[4, "asc"]],
+            "order": [[1, "desc"]],
             "serverSide": true,
             "processing": true,
             "columnDefs": [

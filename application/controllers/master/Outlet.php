@@ -27,6 +27,7 @@ class Outlet extends CI_Controller {
 
         $view_data['table_header'] = $this->table_header();
 
+//        $template->set_box(false);
         $template->load_view('master/outlet/list', $view_data);
 
         $template->tampil();

@@ -23,20 +23,17 @@ $auth = new Auth_model();
                         </div>
 
                     </div>
+                     <div class="col-md-3" >
+                        <div class="form-group">
+                            <label for="">Nama produk</label>
+                            <input type="text" name="nama_produk" value="" class="form-control" placeholder="nama produk">
+                        </div>
+                    </div>
                     <div class="col-md-3" >
                         <div class="form-group">
                             <label for="">sku</label>
                             <input type="text" name="sku" value="" class="form-control" placeholder="sku">
                         </div>
-
-                    </div>
-                    <div class="col-md-3" >
-                        <div class="form-group">
-                            <label for="">Nama produk</label>
-                            <input type="text" name="nama_produk" value="" class="form-control" placeholder="nama produk">
-                        </div>
-
-
                     </div>
                     <div class="col-md-3" >
 

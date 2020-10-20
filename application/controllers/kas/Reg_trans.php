@@ -7,7 +7,7 @@ class Reg_trans extends CI_Controller {
     private $id_usaha = null;
     private $url_controller = '';
     private $primary_key = 'id_kastrans_reg';
-    private $title = 'Daftar Transaksi Kas';
+    private $title = 'Transaksi Kas';
     private $table_name = 'kastrans_reg';
 
     public function __construct() {
@@ -17,7 +17,6 @@ class Reg_trans extends CI_Controller {
         $auth->is_login();
         $this->id_usaha = $auth->get_user_data()->id_usaha;
         $this->url_controller = $auth->get_url_controller();
-
     }
 
     public function index() {
@@ -35,13 +34,17 @@ class Reg_trans extends CI_Controller {
         $opt_outlet = dropdown_array($outlet_ar, 'id_outlet', 'nama_outlet', 'Pilih Outlet...', FALSE);
 
 
+        $tanggal_val = date('01/m/Y') . " - " . date('t/m/Y');
+
+
         $view_data = array(
             'table_header' => $this->table_header(),
-            'opt_outlet' => $opt_outlet
+            'opt_outlet' => $opt_outlet,
+            'tanggal_val' => $tanggal_val,
         );
 
         $template->load_view('kas/reg_trans/list', $view_data);
-        
+
         $template->set_box(false);
 
         $template->tampil();
@@ -52,6 +55,7 @@ class Reg_trans extends CI_Controller {
             'aksi',
             'id_kastrans_reg',
             'kode',
+            'outlet',
             'jenis transaksi',
             'tanggal',
             'nominal'
@@ -65,6 +69,7 @@ class Reg_trans extends CI_Controller {
             'aksi',
             'kastrans_reg.id_kastrans_reg',
             'kastrans_reg.kode_kastrans',
+            'm_outlet.nama_outlet',
             'kastrans_kategori.nama_kastrans_kategori',
             'kastrans_reg.tanggal',
             'kastrans_reg.nominal'
@@ -75,9 +80,10 @@ class Reg_trans extends CI_Controller {
 
     private function sql() {
         $sql = "SELECT 
-            '' as aksi,
+                        '' as aksi,
             kastrans_reg.id_kastrans_reg,
             kastrans_reg.kode_kastrans,
+            m_outlet.nama_outlet,
             kastrans_kategori.nama_kastrans_kategori,
             DATE_FORMAT(kastrans_reg.tanggal,'%d/%m/%Y') AS tanggal,
             kastrans_reg.nominal
@@ -85,7 +91,10 @@ class Reg_trans extends CI_Controller {
             FROM kastrans_reg
 
             LEFT JOIN kastrans_kategori 
-            ON kastrans_kategori.id_kastrans_kategori=kastrans_kategori.id_kastrans_kategori
+            ON kastrans_kategori.id_kastrans_kategori=kastrans_reg.id_kastrans_kategori
+            
+            LEFT JOIN m_outlet
+            ON m_outlet.id_outlet=kastrans_reg.id_outlet
 
             WHERE kastrans_reg.`status`=1
             AND kastrans_reg.id_usaha=" . $this->id_usaha . "
@@ -108,9 +117,9 @@ class Reg_trans extends CI_Controller {
                     . '</a>';
             $col .= '&nbsp';
         }
-        
-        if($key=='nominal'){
-            $col= "Rp ".number_format($row['nominal'],2);
+
+        if ($key == 'nominal') {
+            $col = "Rp " . number_format($row['nominal'], 2);
         }
 
         return $col;
@@ -173,12 +182,9 @@ class Reg_trans extends CI_Controller {
 
     // </editor-fold>
 
-    
-    public function add($primary_id = null) {
-        $this->edit($primary_id);
-    }
 
-    public function edit($primary_id = null) {
+
+    public function pengeluaran($primary_id = null) {
         $auth = new Auth_model();
         $enc = new Encryption_model();
 
@@ -194,19 +200,11 @@ class Reg_trans extends CI_Controller {
 
         $template = new Template();
 
-        $template->set_title($this->title);
+        $template->set_title("Pengeluaran Kas");
         $template->set_title_desc('Tambah ' . $this->title);
 
         $view_data = array();
         $form = array();
-
-//        kode_kastrans
-//id_kastrans_kategori
-//id_outlet
-//tanggal
-//nominal
-//foto_nota
-//keterangan
 
         $form['kode_kastrans'] = '';
         $form['id_kastrans_kategori'] = '';
@@ -216,7 +214,25 @@ class Reg_trans extends CI_Controller {
         $form['foto_nota'] = '';
         $form['keterangan'] = '';
 
+        $pengeluaran_ar = $this->db->select('kastrans_kategori.*,'
+                        . "concat(kastrans_kategori.kode_kastrans_kategori,' - ', kastrans_kategori.nama_kastrans_kategori) as opsi")
+                ->where('status', 1)
+                ->where('id_usaha', $this->id_usaha)
+                ->where('type', 'pengeluaran')
+                ->get('kastrans_kategori')
+                ->result_array();
 
+        $form['opt_pengeluaran'] = dropdown_array($pengeluaran_ar, 'id_kastrans_kategori', 'opsi', 'Tulis/Pilih jenis transaksi kas...');
+
+
+        $outlet_ar = $this->db->where('status', 1)
+                ->where('id_usaha', $this->id_usaha)
+                ->get('m_outlet')
+                ->result_array();
+
+        $opt_outlet = dropdown_array($outlet_ar, 'id_outlet', 'nama_outlet', 'Pilih Outlet...');
+
+        $form['opt_outlet'] = $opt_outlet;
 
         if (!empty(trim($primary_id))) {
             $template->set_title_desc('Edit ' . $this->title);
@@ -245,12 +261,12 @@ class Reg_trans extends CI_Controller {
         $view_data['title'] = $this->title;
 
 
-        $template->load_view('kas/reg_trans/edit', $view_data);
+        $template->load_view('kas/reg_trans/pengeluaran', $view_data);
 
         $template->tampil();
     }
 
-    public function submit() {
+    public function submit_pengeluaran() {
         $auth = new Auth_model();
         $enc = new Encryption_model();
         $userdata = $auth->get_user_data();
@@ -267,6 +283,8 @@ class Reg_trans extends CI_Controller {
         $this->load->library('form_validation');
         $this->form_validation->set_data($post);
 
+//        print_r2($post);
+
         if (!empty(trim($primary_id))) {
             $id_usaha = get_column($this->table_name, array($this->primary_key => $primary_id), 'id_usaha');
             if ($id_usaha != $this->id_usaha) {
@@ -274,12 +292,11 @@ class Reg_trans extends CI_Controller {
                 $succes = FALSE;
             }
         }
-//kode_kastrans_kategori
-//nama_kastrans_kategori
-//type
 
-        $this->form_validation->set_rules('nama_kastrans_kategori', ucwords('jenis transaksi'), 'trim|required');
-        $this->form_validation->set_rules('type', ucwords('type'), 'trim|required');
+        $this->form_validation->set_rules('tanggal', ucwords('tanggal'), 'trim|required');
+        $this->form_validation->set_rules('id_kastrans_kategori', ucwords('jenis transaksi'), 'trim|required');
+        $this->form_validation->set_rules('id_outlet', ucwords('outlet'), 'trim|required');
+//        $this->form_validation->set_rules('kode_kastrans', ucwords('kode'), 'trim|required');
 
 
         if ($this->form_validation->run() == FALSE) {
@@ -288,14 +305,62 @@ class Reg_trans extends CI_Controller {
             $succes = false;
         }
 
+        if ($succes) {
+            $nominal = floatval2($post['nominal']);
+            if ($nominal < 100) {
+                $succes = false;
+                $message = '<p>nominal tidak boleh kosong</p>';
+                $error['nominal'] = '<p>nominal tidak boleh kosong</p>';
+            }
+        }
+
+        $foto_uploaded = '';
+        $config['upload_path'] = './uploads/';
+        $config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|jpeg|PNG|pdf|PDF';
+        $config['max_size'] = 512;
+        $this->load->library('upload', $config);
+
+        if (!empty(trim($_FILES['foto']['name']))) {
+            if ($this->upload->do_upload('foto')) {
+                $foto_uploaded = $this->upload->data()['file_name'];
+            } else {
+                $succes = false;
+                $message .= $this->upload->display_errors();
+            }
+        }
+
+
 
         if ($succes) {
+            $insert_id = null;
+            $id_kastrans_kategori = null;
+            if (!is_numeric($post['id_kastrans_kategori'])) {
 
-            $insert['kode_kastrans_kategori'] = $post['kode_kastrans_kategori'];
-            $insert['nama_kastrans_kategori'] = $post['nama_kastrans_kategori'];
-            $insert['type'] = $post['type'];
+                $insert0['nama_kastrans_kategori'] = $post['id_kastrans_kategori'];
+                $insert0['type'] = 'pengeluaran';
+                $insert0['id_usaha'] = $this->id_usaha;
+
+                $this->db->insert('kastrans_kategori', $insert0);
+                $insert_id0 = $this->db->insert_id();
+
+                $kode0 = 1000 + $insert_id0;
+                $this->db->where(array('id_kastrans_kategori' => $insert_id0));
+                $this->db->set(array('kode_kastrans_kategori' => $kode0));
+                $this->db->update('kastrans_kategori');
+
+                $id_kastrans_kategori = $insert_id0;
+            } else {
+                $id_kastrans_kategori = $post['id_kastrans_kategori'];
+            }
+
+            $insert['tanggal'] = waktu_dmy_to_ymd($post['tanggal']);
+            $insert['id_kastrans_kategori'] = $id_kastrans_kategori;
+            $insert['id_outlet'] = $post['id_outlet'];
+            $insert['kode_kastrans'] = $post['kode_kastrans'];
+            $insert['nominal'] = floatval2($post['nominal']) * -1;
+            $insert['keterangan'] = $post['keterangan'];
+            $insert['foto_nota'] = $foto_uploaded;
             $insert['id_usaha'] = $this->id_usaha;
-
 
             if (empty(trim($post['primary_id']))) {
 
@@ -303,38 +368,222 @@ class Reg_trans extends CI_Controller {
                 $message = "Data Berhasil disimpan";
                 $insert_id = $this->db->insert_id();
 
-                if (empty(trim($post['kode_kastrans_kategori']))) {
-
-
-
+                if (empty(trim($post['kode_kastrans']))) {
                     $kode = 1000 + $insert_id;
                     $this->db->where(array($this->primary_key => $insert_id));
-                    $this->db->set(array('kode_kastrans_kategori' => $kode));
-                    $this->db->update($this->table_name);
-
-//                    print_r2($this->db->last_query());
-                }
-            } else {
-
-                $this->db->where($this->primary_key, $primary_id);
-                $this->db->set($insert);
-                $this->db->update($this->table_name);
-
-                $insert_id = $primary_id;
-
-                if (empty(trim($post['kode_kastrans_kategori']))) {
-                    $kode = 1000 + $insert_id;
-                    $this->db->where(array($this->primary_key => $insert_id));
-                    $this->db->set(array('kode_kastrans_kategori' => $kode));
+                    $this->db->set(array('kode_kastrans' => $kode));
                     $this->db->update($this->table_name);
                 }
-
-
-                $message = "Data Berhasil disimpan";
             }
             $this->session->set_flashdata('message_succes', $message);
+            $data['primary_id'] = $enc->encode($insert_id);
         }
 
+
+        $result = array(
+            'error' => $error,
+            'message' => $message,
+            'succes' => $succes,
+            'data' => $data,
+        );
+
+        header_json();
+        echo json_encode($result);
+    }
+
+    public function pemasukan($primary_id = null) {
+        $auth = new Auth_model();
+        $enc = new Encryption_model();
+
+        $primary_id = $enc->decode($primary_id);
+
+        if (!empty(trim($primary_id))) {
+            $id_usaha = get_column($this->table_name, array($this->primary_key => $primary_id), 'id_usaha');
+            if ($id_usaha != $this->id_usaha) {
+                $this->session->set_flashdata('message_error', 'Data Tidak Ada');
+                redirect($this->url_controller);
+            }
+        }
+
+        $template = new Template();
+
+        $template->set_title("Pengeluaran Kas");
+        $template->set_title_desc('Tambah ' . $this->title);
+
+        $view_data = array();
+        $form = array();
+
+        $form['kode_kastrans'] = '';
+        $form['id_kastrans_kategori'] = '';
+        $form['id_outlet'] = '';
+        $form['tanggal'] = '';
+        $form['nominal'] = '';
+        $form['foto_nota'] = '';
+        $form['keterangan'] = '';
+
+        $pengeluaran_ar = $this->db->select('kastrans_kategori.*,'
+                        . "concat(kastrans_kategori.kode_kastrans_kategori,' - ', kastrans_kategori.nama_kastrans_kategori) as opsi")
+                ->where('status', 1)
+                ->where('id_usaha', $this->id_usaha)
+                ->where('type', 'pemasukan')
+                ->get('kastrans_kategori')
+                ->result_array();
+
+        $form['opt_pemasukan'] = dropdown_array($pengeluaran_ar, 'id_kastrans_kategori', 'opsi', 'Tulis/Pilih jenis transaksi kas...');
+
+
+        $outlet_ar = $this->db->where('status', 1)
+                ->where('id_usaha', $this->id_usaha)
+                ->get('m_outlet')
+                ->result_array();
+
+        $opt_outlet = dropdown_array($outlet_ar, 'id_outlet', 'nama_outlet', 'Pilih Outlet...');
+
+        $form['opt_outlet'] = $opt_outlet;
+
+        if (!empty(trim($primary_id))) {
+            $template->set_title_desc('Edit ' . $this->title);
+
+            $where = array(
+                'id_usaha' => $this->id_usaha,
+                $this->primary_key => $primary_id,
+            );
+            $this->db->where($where);
+            $db = $this->db->get($this->table_name);
+
+            if ($db->num_rows() > 0) {
+                $form['kode_kastrans'] = $db->row_object()->kode_kastrans;
+                $form['id_kastrans_kategori'] = $db->row_object()->id_kastrans_kategori;
+                $form['id_outlet'] = $db->row_object()->id_outlet;
+                $form['tanggal'] = $db->row_object()->tanggal;
+                $form['nominal'] = $db->row_object()->nominal;
+                $form['foto_nota'] = $db->row_object()->foto_nota;
+                $form['keterangan'] = $db->row_object()->keterangan;
+            }
+        }
+
+
+        $view_data['primary_id'] = $primary_id;
+        $view_data['form'] = $form;
+        $view_data['title'] = $this->title;
+
+
+        $template->load_view('kas/reg_trans/pemasukan', $view_data);
+
+        $template->tampil();
+    }
+
+    public function submit_pemasukan() {
+        $auth = new Auth_model();
+        $enc = new Encryption_model();
+        $userdata = $auth->get_user_data();
+
+
+        $message = '';
+        $succes = true;
+        $data = array();
+        $error = array();
+        $post = $this->input->post();
+
+        $primary_id = ($post['primary_id']);
+
+        $this->load->library('form_validation');
+        $this->form_validation->set_data($post);
+
+
+        if (!empty(trim($primary_id))) {
+            $id_usaha = get_column($this->table_name, array($this->primary_key => $primary_id), 'id_usaha');
+            if ($id_usaha != $this->id_usaha) {
+                $message .= '<p>Data Tidak Ditemukan</p>';
+                $succes = FALSE;
+            }
+        }
+
+        $this->form_validation->set_rules('tanggal', ucwords('tanggal'), 'trim|required');
+        $this->form_validation->set_rules('id_kastrans_kategori', ucwords('jenis transaksi'), 'trim|required');
+        $this->form_validation->set_rules('id_outlet', ucwords('outlet'), 'trim|required');
+//        $this->form_validation->set_rules('kode_kastrans', ucwords('kode'), 'trim|required');
+
+
+        if ($this->form_validation->run() == FALSE) {
+            $message = validation_errors();
+            $error = $this->form_validation->error_array();
+            $succes = false;
+        }
+
+        if ($succes) {
+            $nominal = floatval2($post['nominal']);
+            if ($nominal < 100) {
+                $succes = false;
+                $message = '<p>nominal tidak boleh kosong</p>';
+                $error['nominal'] = '<p>nominal tidak boleh kosong</p>';
+            }
+        }
+
+        $foto_uploaded = '';
+        $config['upload_path'] = './uploads/';
+        $config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|jpeg|PNG|pdf|PDF';
+        $config['max_size'] = 512;
+        $this->load->library('upload', $config);
+
+        if (!empty(trim($_FILES['foto']['name']))) {
+            if ($this->upload->do_upload('foto')) {
+                $foto_uploaded = $this->upload->data()['file_name'];
+            } else {
+                $succes = false;
+                $message .= $this->upload->display_errors();
+            }
+        }
+
+
+
+        if ($succes) {
+            $insert_id = null;
+            $id_kastrans_kategori = null;
+            if (!is_numeric($post['id_kastrans_kategori'])) {
+
+                $insert0['nama_kastrans_kategori'] = $post['id_kastrans_kategori'];
+                $insert0['type'] = 'pengeluaran';
+                $insert0['id_usaha'] = $this->id_usaha;
+
+                $this->db->insert('kastrans_kategori', $insert0);
+                $insert_id0 = $this->db->insert_id();
+
+                $kode0 = 1000 + $insert_id0;
+                $this->db->where(array('id_kastrans_kategori' => $insert_id0));
+                $this->db->set(array('kode_kastrans_kategori' => $kode0));
+                $this->db->update('kastrans_kategori');
+
+                $id_kastrans_kategori = $insert_id0;
+            } else {
+                $id_kastrans_kategori = $post['id_kastrans_kategori'];
+            }
+
+            $insert['tanggal'] = waktu_dmy_to_ymd($post['tanggal']);
+            $insert['id_kastrans_kategori'] = $id_kastrans_kategori;
+            $insert['id_outlet'] = $post['id_outlet'];
+            $insert['kode_kastrans'] = $post['kode_kastrans'];
+            $insert['nominal'] = floatval2($post['nominal']);
+            $insert['keterangan'] = $post['keterangan'];
+            $insert['foto_nota'] = $foto_uploaded;
+            $insert['id_usaha'] = $this->id_usaha;
+
+            if (empty(trim($post['primary_id']))) {
+
+                $this->db->insert($this->table_name, $insert);
+                $message = "Data Berhasil disimpan";
+                $insert_id = $this->db->insert_id();
+
+                if (empty(trim($post['kode_kastrans']))) {
+                    $kode = 1000 + $insert_id;
+                    $this->db->where(array($this->primary_key => $insert_id));
+                    $this->db->set(array('kode_kastrans' => $kode));
+                    $this->db->update($this->table_name);
+                }
+            }
+            $this->session->set_flashdata('message_succes', $message);
+            $data['primary_id'] = $enc->encode($insert_id);
+        }
 
 
 
@@ -354,31 +603,31 @@ class Reg_trans extends CI_Controller {
         $succes = true;
         $data = array();
         $error = array();
-
-        $auth = new Auth_model();
-
-        $primary_id = $this->input->post('delete_id');
-
-        $lock = get_column($this->table_name, array($this->primary_key => $primary_id), 'lock_code');
-
-        if (intval($lock) > 0) {
-            $succes = FALSE;
-            $message .= "Data Tersebut Dikunci";
-        }
-
-        if ($succes) {
-
-            $this->db->set('status', 0);
-            $this->db->where('id_usaha', $this->id_usaha);
-            $this->db->where($this->primary_key, $primary_id);
-            $this->db->update($this->table_name);
-        }
-
-
-        if ($succes) {
-            $this->session->set_flashdata('message_succes', 'Data Berhasil Dihapus');
-            $message = "Data Berhasil Dihapus";
-        }
+//
+//        $auth = new Auth_model();
+//
+//        $primary_id = $this->input->post('delete_id');
+//
+//        $lock = get_column($this->table_name, array($this->primary_key => $primary_id), 'lock_code');
+//
+//        if (intval($lock) > 0) {
+//            $succes = FALSE;
+//            $message .= "Data Tersebut Dikunci";
+//        }
+//
+//        if ($succes) {
+//
+//            $this->db->set('status', 0);
+//            $this->db->where('id_usaha', $this->id_usaha);
+//            $this->db->where($this->primary_key, $primary_id);
+//            $this->db->update($this->table_name);
+//        }
+//
+//
+//        if ($succes) {
+//            $this->session->set_flashdata('message_succes', 'Data Berhasil Dihapus');
+//            $message = "Data Berhasil Dihapus";
+//        }
 
 
         $result = array(
@@ -390,6 +639,44 @@ class Reg_trans extends CI_Controller {
 
         header_json();
         echo json_encode($result);
+    }
+
+    function detail($primary_id) {
+
+        $auth = new Auth_model();
+        $enc = new Encryption_model();
+
+        $primary_id = $enc->decode($primary_id);
+
+        if (!empty(trim($primary_id))) {
+            $id_usaha = get_column($this->table_name, array($this->primary_key => $primary_id), 'id_usaha');
+            if ($id_usaha != $this->id_usaha) {
+                $this->session->set_flashdata('message_error', 'Data Tidak Ada');
+                redirect($this->url_controller);
+            }
+        }
+
+        $this->load->model('kas/Reg_trans_model');
+        $reg_trans_model = new Reg_trans_model();
+
+        $detail = $reg_trans_model->get($primary_id, true);
+
+        $template = new Template();
+
+        $template->set_title("Detail Transaksi Kas");
+        $template->set_title_desc('Detail Transaksi Kas');
+
+//        print_r2($detail);
+
+
+        $view_data['primary_id'] = $primary_id;
+        $view_data['title'] = $this->title;
+        $view_data['detail'] = $detail;
+
+
+        $template->load_view('kas/reg_trans/detail', $view_data);
+
+        $template->tampil();
     }
 
     public function xls() {
@@ -419,7 +706,5 @@ class Reg_trans extends CI_Controller {
         header("Content-Disposition: attachment; filename=" . trim($this->title) . "_" . uniqid() . ".xls");
         echo $content;
     }
-    
-    
 
 }

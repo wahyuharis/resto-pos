@@ -23,7 +23,7 @@ $CI = &get_instance();
 
             <header class="main-header">
                 <!-- Logo -->
-                <a href="<?= $lte_url ?>index2.html" class="logo" style="">
+                <a href="<?= base_url() ?>" class="logo" style="">
                     <span class="logo-mini">                        
                         <img class="img-circle" style="height: 30px;width: 30px" src="<?= base_url() . $logo_usaha ?>">
                     </span>
@@ -122,12 +122,12 @@ $CI = &get_instance();
 
                         <?php
                         $act = "";
-                        if ($auth->get_url_controller() == 'app/home/') {
+                        if ($auth->get_url_controller() == '') {
                             $act = 'active';
                         }
                         ?>
                         <li class="<?= $act ?>">
-                            <a href="<?= base_url('app/home/') ?>">
+                            <a href="<?= base_url('') ?>">
                                 <i class="fa fa-home"></i> <span>Beranda</span>
                             </a>
                         </li>
@@ -153,7 +153,7 @@ $CI = &get_instance();
             <!-- Content Wrapper. Contains page content -->
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
-                <section class="content-header">
+                <section id="content-header" style="opacity: 0" class="content-header">
                     <h1>
                         <?= $title ?>
                         <small><?= $title_desc ?></small>
